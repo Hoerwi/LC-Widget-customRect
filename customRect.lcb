@@ -21,9 +21,9 @@ Name: Custom Rect
 
 Type: widget
 
-Summary: 	This widget rounds corners with different radius each corner.
-			    This is PuplicDomain, OpenSource etc.ect. Free4All
-          if you pay anyone for this widget, its your own fault...
+Summary: This widget rounds corners with different radius each corner.
+	 This is PuplicDomain, OpenSource etc.ect. Free4All
+         if you pay anyone for this widget, its your own fault...
           
 Syntax:
   
@@ -58,16 +58,16 @@ widget community.livecode.hoerwi.customrect
 	private variable mShowTopRight      as Boolean
 	private variable mShowBottomRight   as Boolean
 	private variable mShowBottomLeft    as Boolean
-	private variable mLabel				      as String
-  private variable mStroke			      as Real
-	private variable mShowBackground 	  as Boolean
-	private variable mShowBorder		    as Boolean
-	private variable mShowLabel			    as Boolean
+	private variable mLabel		    as String
+  	private variable mStroke	    as Real
+	private variable mShowBackground    as Boolean
+	private variable mShowBorder	    as Boolean
+	private variable mShowLabel	    as Boolean
 	private variable mPath              as Path
 	private variable mPaint             as optional Paint
-	private variable mFormattedWidth	  as Real
-	private variable mFormattedHeight 	as Real
-	private variable mHilite			      as Boolean
+	private variable mFormattedWidth    as Real
+	private variable mFormattedHeight   as Real
+	private variable mHilite	    as Boolean
 	
 	
 	--> Basic
@@ -92,15 +92,12 @@ widget community.livecode.hoerwi.customrect
 	property "hilite" get mHilite set setHilite
 	metadata hilite.default is "false"
 	metadata hilite.label is "Hilite"
-	*/
+  */
   
 	property "showBorder" get mShowBorder set setShowBorder
 	metadata showBorder.default is "true"
 	metadata showBorder.label is "Show border"
 	
-
-	
-
 	property "bordersize" get mStroke set setStroke
 	metadata bordersize.label is "bordersize"
 	metadata bordersize.editor is "com.livecode.pi.number"
@@ -114,7 +111,6 @@ widget community.livecode.hoerwi.customrect
 	metadata ShowTopRight.label is "Show Round Top Right"
 	metadata ShowBottomLeft.label is "Show Round Bottom Left"
 	metadata ShowBottomRight.label is "Show Round Bottom Right"
-
 	
 	property "TopLeftRadius"          get mTLRadius             set setTLRadius
 	property "TopRightRadius"         get mTRRadius             set setTRRadius
@@ -149,10 +145,6 @@ widget community.livecode.hoerwi.customrect
 	metadata BottomRightRadius.min is "0"
 	metadata BottomRightRadius.max is "75"
 	
-	
-
-
-	
 	--Colors
 
 	metadata foregroundColor.editor is "com.livecode.pi.color"
@@ -169,12 +161,14 @@ widget community.livecode.hoerwi.customrect
 	metadata borderColor.default is "0,0,0"
 	metadata bordercolor.section is "Colors"
 	metadata borderColor.label is "Border"
-	
+
+ /* Doesnt work --
 	--metadata hiliteColor.editor is "com.livecode.pi.color"
 	--metadata hiliteColor.default is "255,128,0"
 	--metadata hiliteColor.section is "Colors"
 	--metadata hiliteColor.label is "Hilite"
-	
+ */
+
 	private handler setHilite(in pHilite as Boolean) returns nothing
 		if pHilite is mHilite then
 			return
