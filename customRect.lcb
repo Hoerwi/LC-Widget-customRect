@@ -1,0 +1,497 @@
+/*
+Copyright (C) 2019 LiveCode Ltd.
+
+This widget is an extension part of LiveCode.
+
+LiveCode is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License v3 as published by the Free
+Software Foundation.
+
+LiveCode is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with LiveCode.  If not see <http://www.gnu.org/licenses/>. 
+
+
+
+Name: Custom Rect
+
+Type: widget
+
+Summary: 	This widget rounds corners with different radius each corner.
+			    This is PuplicDomain, OpenSource etc.ect. Free4All
+          if you pay anyone for this widget, its your own fault...
+          
+Syntax:
+  
+  set TopLeftRadius|TopRightRadius|BottomLeftRadius|BottomRightRadius of widget "Custom Rect" to [Number]
+ 
+  set showTopLeft|showTopRight|showBottomLeft|showBottomRight of widget "Custom Rect" to true|false
+
+*/
+
+widget community.livecode.hoerwi.customrect
+
+	use com.livecode.canvas
+	use com.livecode.widget
+	use com.livecode.math
+	use com.livecode.engine
+
+
+	metadata title is "Custom Rect"
+	metadata author is "Andreas Strauch"
+	metadata version is "1.1.0"
+	metadata svgicon is "M342.13 190.11C387.32 190.11 423.95 226.74 423.95 271.93C423.95 287.69 423.95 327.08 423.95 390.11C361.91 390.11 323.13 390.11 307.62 390.11C261.41 390.11 223.95 352.65 223.95 306.44C223.95 283.18 223.95 263.21 223.95 231.48C223.95 208.63 242.47 190.11 265.32 190.11C297.05 190.11 318.5 190.11 342.13 190.11Z"
+	metadata preferredSize is "150,150"
+	
+	
+	
+	-- private
+	private variable mTLRadius          as Number
+	private variable mTRRadius          as Number
+	private variable mBLRadius          as Number
+	private variable mBRRadius          as Number
+	private variable mShowTopLeft       as Boolean
+	private variable mShowTopRight      as Boolean
+	private variable mShowBottomRight   as Boolean
+	private variable mShowBottomLeft    as Boolean
+	private variable mLabel				      as String
+  private variable mStroke			      as Real
+	private variable mShowBackground 	  as Boolean
+	private variable mShowBorder		    as Boolean
+	private variable mShowLabel			    as Boolean
+	private variable mPath              as Path
+	private variable mPaint             as optional Paint
+	private variable mFormattedWidth	  as Real
+	private variable mFormattedHeight 	as Real
+	private variable mHilite			      as Boolean
+	
+	
+	--> Basic
+	property "Label" get mLabel set setlabel
+	metadata Label.default is "Custom Rect"
+	metadata customProperties.user_visible is "false"
+	
+	property "FormattedWidth" get mFormattedWidth
+	property "formattedHeight" get mFormattedHeight
+	metadata FormattedWidth.user_visible is "false"
+	metadata FormattedHeight.user_visible is "false"
+	
+	property "showLabel" get mShowLabel set setShowLabel
+	metadata showLabel.default is "true"
+	metadata ShowLabel.label is "Show Label"
+		
+	property "opaque" get mShowBackground set setShowBackground
+	metadata opaque.default is "true"
+	metadata opaque.label is "Opaque"
+
+  /* Doesnt work --
+	property "hilite" get mHilite set setHilite
+	metadata hilite.default is "false"
+	metadata hilite.label is "Hilite"
+	*/
+  
+	property "showBorder" get mShowBorder set setShowBorder
+	metadata showBorder.default is "true"
+	metadata showBorder.label is "Show border"
+	
+
+	
+
+	property "bordersize" get mStroke set setStroke
+	metadata bordersize.label is "bordersize"
+	metadata bordersize.editor is "com.livecode.pi.number"
+	metadata bordersize.default is "1"
+	
+	property ShowTopLeft               get mShowTopLeft       set setShowTopLeft
+	property ShowTopRight              get mShowTopRight      set setShowTopRight
+	property ShowBottomLeft            get mShowBottomLeft    set setShowBottomLeft
+	property ShowBottomRight           get mShowBottomRight   set setShowBottomRight
+	metadata ShowTopLeft.label is "Show Round Top Left"
+	metadata ShowTopRight.label is "Show Round Top Right"
+	metadata ShowBottomLeft.label is "Show Round Bottom Left"
+	metadata ShowBottomRight.label is "Show Round Bottom Right"
+
+	
+	property "TopLeftRadius"          get mTLRadius             set setTLRadius
+	property "TopRightRadius"         get mTRRadius             set setTRRadius
+	property "BottomLeftRadius"       get mBLRadius             set setBLRadius
+	property "BottomRightRadius"      get mBRRadius             set setBRRadius
+	
+	metadata TopLeftRadius.label is "Top Left"
+	metadata TopLeftRadius.editor is "com.livecode.pi.number"
+	metadata TopLeftRadius.default is "25"
+	metadata TopLeftRadius.step is "1"
+	metadata TopLeftRadius.min is "0"
+	metadata TopLeftRadius.max is "75"
+	
+	metadata TopRightRadius.label is "Top Right"
+	metadata TopRightRadius.editor is "com.livecode.pi.number"
+	metadata TopRightRadius.default is "45"
+	metadata TopRightRadius.step is "1"
+	metadata TopRightRadius.min is "0"
+	metadata TopRightRadius.max is "75"
+	
+	metadata BottomLeftRadius.label is "Bottom Left"
+	metadata BottomLeftRadius.editor is "com.livecode.pi.number"
+	metadata BottomLeftRadius.default is "45"
+	metadata BottomLeftRadius.step is "1"
+	metadata BottomLeftRadius.min is "0"
+	metadata BottomLeftRadius.max is "75"
+	
+	metadata BottomRightRadius.label is "Bottom Right"
+	metadata BottomRightRadius.editor is "com.livecode.pi.number"
+	metadata BottomRightRadius.default is "75"
+	metadata BottomRightRadius.step is "1"
+	metadata BottomRightRadius.min is "0"
+	metadata BottomRightRadius.max is "75"
+	
+	
+
+
+	
+	--Colors
+
+	metadata foregroundColor.editor is "com.livecode.pi.color"
+	metadata foregroundColor.default is "255,255,255"
+	metadata foregroundColor.section is "Colors"
+	metadata foregroundColor.label is "Label"
+	
+	metadata backgroundColor.editor is "com.livecode.pi.color"
+	metadata backgroundColor.default is "0,128,255"
+	metadata backgroundcolor.section is "Colors"
+	metadata backgroundColor.label is "Background"
+	
+	metadata borderColor.editor is "com.livecode.pi.color"
+	metadata borderColor.default is "0,0,0"
+	metadata bordercolor.section is "Colors"
+	metadata borderColor.label is "Border"
+	
+	--metadata hiliteColor.editor is "com.livecode.pi.color"
+	--metadata hiliteColor.default is "255,128,0"
+	--metadata hiliteColor.section is "Colors"
+	--metadata hiliteColor.label is "Hilite"
+	
+	private handler setHilite(in pHilite as Boolean) returns nothing
+		if pHilite is mHilite then
+			return
+		end if
+	end handler
+	
+	private handler setShowLabel(in pShowLabel as Boolean) returns nothing
+		if pShowLabel is mShowLabel then
+			return
+		end if
+
+		put pShowLabel into mShowLabel
+		redraw all
+	end handler
+
+	private handler setShowBackground(in pShowBackground as Boolean) returns nothing
+		if pShowBackground is mShowBackground then
+			return
+		end if
+
+		put pShowBackground into mShowBackground
+		redraw all
+	end handler
+	
+	private handler setShowBorder(in pShowBorder as Boolean) returns nothing
+	if pShowBorder is mShowBorder then
+		return
+	end if
+
+	put pShowBorder into mShowBorder
+		redraw all
+	end handler
+
+
+	public handler setStroke(in pStroke as Real)
+		if pStroke > 5 then 
+			put 5 into pStroke
+		end if
+		put pStroke into mStroke
+		calcShape()
+		redraw all
+	end handler
+	
+
+	private handler setTLRadius(in pRadius as Number)
+		put max(pRadius, mStroke) into mTLRadius
+		calcShape()
+		redraw all
+	end handler
+	
+	private handler setTRRadius(in pRadius as Number)
+		put max(pRadius, mStroke) into mTRRadius
+		calcShape()
+		redraw all
+	end handler
+	
+	private handler setBLRadius(in pRadius as Number)
+		put max(pRadius, mStroke) into mBLRadius
+		calcShape()
+		redraw all
+	end handler
+	
+	private handler setBRRadius(in pRadius as Number)
+		put max(pRadius, mStroke) into mBRRadius
+		calcShape()
+		redraw all
+	end handler
+
+	private handler setShowTopLeft(in pBoolean as Boolean)
+	  put pBoolean into mShowTopLeft
+	  calcShape()
+	  redraw all
+	end handler
+
+	private handler setShowTopRight(in pBoolean as Boolean)
+	  put pBoolean into mShowTopRight
+	  calcShape()
+	  redraw all
+	end handler
+
+	private handler setShowBottomRight(in pBoolean as Boolean)
+	  put pBoolean into mShowBottomRight
+	  calcShape()
+	  redraw all
+	end handler
+
+	private handler setShowBottomLeft(in pBoolean as Boolean)
+	  put pBoolean into mShowBottomLeft
+	  calcShape()
+	  redraw all
+	end handler
+	
+	public handler setLabel(in pLabel as String) returns nothing
+		put pLabel into mLabel
+		redraw all
+	end handler
+	
+
+	public handler OnCreate()
+		put 1 into mStroke
+		put mStroke into mTLRadius
+		put 25 into mTRRadius
+		put 25 into mBLRadius
+		put mStroke into mBRRadius
+		put the empty path into mPath
+		put true into mShowTopLeft
+		put true into mShowTopRight
+		put true into mShowBottomLeft
+		put true into mShowBottomRight
+		setLabel("Custom Rect")
+		put true into mShowBackground
+		put true into mShowBorder
+		put true into mShowLabel
+		put false into mHilite
+		
+		
+	end handler
+
+	public handler OnSave(out rProperties as Array)
+		put the empty array into rProperties
+		put mTLRadius into rProperties["TLradius"]
+		put mTRRadius into rProperties["TRradius"]
+		put mBLRadius into rProperties["BLradius"]
+		put mBRRadius into rProperties["BRradius"]
+		put mShowTopLeft into rProperties["ShowTopLeft"]
+		put mShowTopRight into rProperties["ShowTopRight"]
+		put mShowBottomLeft into rProperties["ShowBottomLeft"]
+		put mShowBottomRight into rProperties["ShowBottomRight"]
+		put mLabel into rProperties["label"]
+		put mStroke into rProperties["bordersize"]
+		put mShowBorder into rProperties["showBorder"]
+		put mShowBackground into rProperties["opaque"]
+		put mShowLabel into rProperties["showLabel"]
+		put mHilite into rProperties ["hilite"]
+	end handler
+
+
+	public handler OnLoad(in pProperties as Array)
+		put pProperties["TLradius"] into mTLRadius
+		put pProperties["TRradius"] into mTRRadius
+		put pProperties["BLradius"] into mBLRadius
+		put pProperties["BRradius"] into mBRRadius
+		put pProperties["ShowTopLeft"] into mShowTopLeft
+		put pProperties["ShowTopRight"] into mShowTopRight
+		put pProperties["ShowBottomLeft"] into mShowBottomLeft
+		put pProperties["ShowBottomRight"] into mShowBottomRight
+		put pProperties["label"] into mLabel
+		put pProperties["bordersize"] into mStroke
+		
+		if "hilite" is among the keys of pProperties then
+			put pProperties["hilite"] into mHilite
+		else
+			put false into mHilite
+		end if	
+		
+		if "showLabel" is among the keys of pProperties then
+			put pProperties["showLabel"] into mShowLabel
+		else
+			put true into mShowLabel
+		end if		
+		
+		if "showBorder" is among the keys of pProperties then
+			put pProperties["showBorder"] into mShowBorder
+		else
+			put true into mShowBorder
+		end if
+		
+		if "opaque" is among the keys of pProperties then
+			put pProperties["opaque"] into mShowBackground
+		else
+			put true into mShowBackground
+		end if
+    end handler
+
+
+	public handler OnOpen()
+		calcShape()
+	end handler
+
+
+	public handler OnGeometryChanged()
+		calcShape()
+	end handler
+
+	public handler OnMouseUp()
+		if the mouse position is within my bounds then
+			post "mouseUp" to my script object with [the click button formatted as string] -- formatint needed until dp-2
+		else
+			post "mouseRelease" to my script object with [the click button formatted as string] -- formatint needed until dp-2
+		end if
+	end handler
+
+
+	public handler OnMouseCancel()
+		post "mouseRelease" to my script object with [the click button formatted as string] -- formatint needed until dp-2
+	end handler
+
+
+	public handler OnMouseDown()
+		post "mouseDown" to my script object with [the click button formatted as string]
+	end handler
+	
+	private handler onMouseHover() returns nothing
+	
+		
+	end handler
+		
+
+	private handler calcShape() returns nothing
+		variable ttlRadius as Number
+		variable ttrRadius as Number
+		variable tblRadius as Number
+		variable tbrRadius as Number
+		variable tHeight as Number
+		variable tWidth as Number
+
+		put mTLRadius into ttlRadius
+		put mTRRadius into ttrRadius
+		put mBLRadius into tblRadius
+		put mBRRadius into tbrRadius
+		put the empty path into mPath
+		
+		put my width - mStroke into tWidth
+		put my height - mStroke into tHeight
+
+		// Make sure radius doesn't exceed what is allowed based on widget height
+		put min(ttlRadius, tHeight /2) into ttlRadius
+		put min(ttrRadius, tHeight /2) into ttrRadius
+		put min(tblRadius, tHeight /2) into tblRadius
+		put min(tbrRadius, tHeight /2) into tbrRadius
+		
+
+		// Begin a new subpath
+		if mShowTopLeft then
+			move to point [mStroke, ttlRadius] on mPath
+			arc through point [mStroke, mStroke] to point [ttlRadius, mStroke] with radius ttlRadius on mPath
+		else
+			move to point [mStroke, mStroke] on mPath
+		end if
+
+		if mShowTopRight then
+			arc through point [tWidth, mStroke] to point [tWidth, ttrRadius+1] with radius ttrRadius on mPath
+		else
+			line to point [tWidth, mStroke] on mPath
+		end if
+
+		if mShowBottomRight then
+			arc through point [tWidth, tHeight] to point [tWidth - tbrRadius, tHeight] with radius tbrRadius on mPath
+			
+		else
+			line to point [tWidth, tHeight] on mPath
+		end if
+
+		if mShowBottomLeft then
+			arc through point [mStroke, tHeight] to point [mStroke,tHeight - tblRadius] with radius tblRadius on mPath
+		else
+			line to point [mStroke, tHeight] on mPath
+			line to point [mStroke, tblRadius] on mPath
+		end if
+
+		// Close the path with a line back to the starting point
+		close path on mPath
+	end handler
+
+	----------
+	-- called whenever LiveCode needs to redraw the widget
+	public handler OnPaint()
+		
+	-- Stroke
+		if mShowBorder then
+			if mStroke > 0 then
+				set the paint of this canvas to my border paint
+				set the stroke width of this canvas to mStroke
+				stroke mPath on this canvas
+			end if
+		end if
+
+		
+	-- Background
+	
+	
+		if mShowBackground then
+		
+		set the paint of this canvas to my background paint 
+		fill mPath on this canvas
+		end if
+		
+		
+		
+	-- label/Label
+	
+		if mShowLabel then
+			variable tHeight as Number
+			variable tWidth as Number
+			variable tBounds as Rectangle
+			put my width into tWidth
+			put my height into tHeight
+			put the bounds of text mLabel on this canvas into tBounds
+			
+			put the width of tBounds into mFormattedWidth
+			put the height of tBounds into mFormattedHeight
+			set the font of this canvas to my font
+			set the paint of this canvas to my foreground paint
+			
+
+		
+			fill text mLabel at center of rectangle [0,0,tWidth,tHeight] on this canvas
+		end if
+		
+
+
+         
+	end handler
+
+
+	public handler OnClose()
+
+	end handler
+
+end widget
